@@ -1,6 +1,7 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { util } from '@kit.ArkTS';
 import nacl from 'libstage.so';
+import { runWebrtcLoopback, LoopbackResult } from '../webrtc/loopback';
 
 const DOMAIN = 0x0000;
 
@@ -47,17 +48,20 @@ function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
 @Entry
 @Component
 struct Index {
-  @State summary: string = '加载中...';
+  @State naclSummary: string = '加载中...';
   @State addCheck: string = '';
-  @State failures: string[] = [];
+  @State naclFailures: string[] = [];
+  @State webrtcSummary: string = '等待中...';
+  @State webrtcEvents: string[] = [];
 
   aboutToAppear(): void {
-    this.runTests();
+    this.runNaclTests();
+    this.runWebrtc();
   }
 
-  private async runTests(): Promise<void> {
-    this.summary = 'running...';
-    this.failures = [];
+  private async runNaclTests(): Promise<void> {
+    this.naclSummary = 'running...';
+    this.naclFailures = [];
 
     try {
       const sum = nacl.add(2, 3);
@@ -70,14 +74,14 @@ struct Index {
     try {
       const ctx = this.getUIContext().getHostContext();
       if (!ctx) {
-        this.summary = 'no host context';
+        this.naclSummary = 'no host context';
         return;
       }
       const raw = await ctx.resourceManager.getRawFileContent('secretbox.json');
       const decoder = util.TextDecoder.create('utf-8');
       fx = JSON.parse(decoder.decodeToString(raw)) as Fixtures;
     } catch (e) {
-      this.summary = `fixtures load failed: ${JSON.stringify(e)}`;
+      this.naclSummary = `fixtures load failed: ${JSON.stringify(e)}`;
       return;
     }
 
@@ -122,42 +126,59 @@ struct Index {
       }
     }
 
-    this.failures = fails;
-    this.summary = `${total - fails.length}/${total} passed`;
-    hilog.info(DOMAIN, 'nacl', 'result: %{public}s', this.summary);
+    this.naclFailures = fails;
+    this.naclSummary = `nacl: ${total - fails.length}/${total} passed`;
+    hilog.info(DOMAIN, 'nacl', 'result: %{public}s', this.naclSummary);
+  }
+
+  private async runWebrtc(): Promise<void> {
+    this.webrtcSummary = 'webrtc: running...';
+    try {
+      const result: LoopbackResult = await runWebrtcLoopback();
+      this.webrtcEvents = result.events;
+      this.webrtcSummary = `webrtc: ${result.summary}`;
+      hilog.info(DOMAIN, 'webrtc', 'result: %{public}s', this.webrtcSummary);
+    } catch (e) {
+      this.webrtcSummary = `webrtc threw: ${JSON.stringify(e)}`;
+      hilog.error(DOMAIN, 'webrtc', 'threw: %{public}s', JSON.stringify(e));
+    }
   }
 
   build() {
-    Column() {
-      Text(this.summary)
-        .fontSize(24)
-        .fontWeight(FontWeight.Bold)
-        .margin({ top: 40, bottom: 12 })
+    Scroll() {
+      Column() {
+        Text(this.naclSummary)
+          .fontSize(20)
+          .fontWeight(FontWeight.Bold)
+          .margin({ top: 40, bottom: 6 })
+        Text(this.addCheck)
+          .fontSize(11)
+          .fontColor(Color.Gray)
+          .margin({ bottom: 14 })
+        ForEach(this.naclFailures, (f: string) => {
+          Text(f)
+            .fontSize(10)
+            .fontColor(Color.Red)
+            .margin({ bottom: 3 })
+            .width('100%')
+        }, (f: string) => f)
 
-      Text(this.addCheck)
-        .fontSize(12)
-        .fontColor(Color.Gray)
-        .margin({ bottom: 20 })
+        Divider().margin({ top: 16, bottom: 16 })
 
-      Button('Run secretbox vectors')
-        .onClick(() => { this.runTests(); })
-        .margin({ bottom: 20 })
-
-      Scroll() {
-        Column() {
-          ForEach(this.failures, (f: string) => {
-            Text(f)
-              .fontSize(11)
-              .fontColor(Color.Red)
-              .margin({ bottom: 6 })
-              .width('100%')
-          }, (f: string) => f)
-        }
-        .width('100%')
+        Text(this.webrtcSummary)
+          .fontSize(20)
+          .fontWeight(FontWeight.Bold)
+          .margin({ bottom: 10 })
+        ForEach(this.webrtcEvents, (e: string, i: number) => {
+          Text(`${i + 1}. ${e}`)
+            .fontSize(10)
+            .fontColor(Color.Gray)
+            .margin({ bottom: 2 })
+            .width('100%')
+        }, (e: string, i: number) => `${i}-${e}`)
       }
-      .layoutWeight(1)
-      .padding({ left: 16, right: 16 })
       .width('100%')
+      .padding({ left: 16, right: 16, bottom: 40 })
     }
     .width('100%')
     .height('100%')
