@@ -1,0 +1,48 @@
+{
+  "app": {
+    // Signing is not committed. Each developer auto-generates their own
+    // debug signing via DevEco Studio: File → Project Structure →
+    // Signing Configs → tick "Support HarmonyOS" and "Automatically
+    // generate signing". DevEco fills this array in-place; do not commit
+    // the material (keyPassword / storePassword / local certpaths).
+    "signingConfigs": [],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "targetSdkVersion": "6.0.2(22)",
+        "compatibleSdkVersion": "6.0.2(22)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "nativeCompiler": "BiSheng",
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "Stage",
+      "srcPath": "./Stage",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

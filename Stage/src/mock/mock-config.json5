@@ -1,0 +1,5 @@
+{
+  "libstage.so": {
+    "source": "src/mock/Libstage.mock.ets"
+  }
+}
