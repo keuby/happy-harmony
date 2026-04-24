@@ -43,6 +43,18 @@
           ]
         }
       ]
+    },
+    {
+      "name": "happy_wire",
+      "srcPath": "./packages/wire",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }

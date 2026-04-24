@@ -10,7 +10,11 @@
     },
     {
       "name": "StageAbility_label",
-      "value": "label"
+      "value": "happy"
+    },
+    {
+      "name": "permission_internet_reason",
+      "value": "Used to authenticate and sync sessions with happy-server."
     }
   ]
 }

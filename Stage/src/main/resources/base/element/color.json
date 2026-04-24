@@ -1,8 +1,14 @@
 {
   "color": [
-    {
-      "name": "start_window_background",
-      "value": "#FFFFFF"
-    }
+    { "name": "start_window_background", "value": "#FFFFFF" },
+    { "name": "background",              "value": "#FFFFFF" },
+    { "name": "surface",                 "value": "#F5F5F7" },
+    { "name": "primary",                 "value": "#0A84FF" },
+    { "name": "danger",                  "value": "#FF453A" },
+    { "name": "text_primary",            "value": "#1C1C1E" },
+    { "name": "text_secondary",          "value": "#8E8E93" },
+    { "name": "divider",                 "value": "#D1D1D6" },
+    { "name": "code_bg",                 "value": "#F2F2F7" },
+    { "name": "code_text",               "value": "#1C1C1E" }
   ]
 }
