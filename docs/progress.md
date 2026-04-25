@@ -2,7 +2,7 @@
 
 HarmonyOS Next 原生 ArkTS 版 slopus/happy。本文件是跨阶段进度的**单一可信来源**——每完成里程碑更新这里，不新建状态文档。
 
-> 最后更新：2026-04-25（PoC-A3 metadata AES-GCM 真机通）
+> 最后更新：2026-04-25（1e nacl HAR 化真机通）
 
 ## Phase 0 — 关键风险验证 ✅ 完结
 
@@ -38,9 +38,9 @@ happy 的 LiveKit 实际是 ElevenLabs ConvAI 的底层传输（见 `happy-serve
 | **PoC-A3** AES-256-GCM 互操作 | `@ohos.security.cryptoFramework` + BIP32 HMAC deriveKey，解 session metadata 并渲染到 HomePage | ✅ 真机端到端 |
 | **1b** LiveKit 客户端 | WebSocket + protobuf v9 信令层 → `@ohos/webrtc` | ⏳ 待开工 |
 | **1d** `happy-wire` 协议 | Zod → ArkTS 类型移植（authQR + session + /v1/auth 已移，messages / realtime 待补） | ⏳ 部分（随 1b/消息解密逐步扩） |
-| **1e** nacl HAR 化 | `packages/nacl` 升级为真正的 HAR 模块（带 native 编译），替换 `Stage/` 里的双份同步副本 | ⏳ 待开工 |
+| **1e** nacl HAR 化 | `packages/nacl` 升级为真正的 HAR 模块（带 native 编译），替换 `Stage/` 里的双份同步副本 | ✅ 真机端到端 |
 
-1a / 1c / 1f / PoC-A3 已完结。剩余 1b / 1d / 1e 可并行推进——1e 独立，1b 沿 WebRTC/LiveKit 线，1d 随 1b / 消息解密增量扩。
+1a / 1c / 1e / 1f / PoC-A3 已完结。剩余 1b / 1d 可并行推进——1d 随 1b / 消息解密增量扩。
 
 ### Phase 1c — nacl NAPI 补全 ✅ 完结
 
@@ -109,7 +109,32 @@ V1 legacy fallback（`dataEncryptionKey === null`）走 NaCl `secretbox_open_eas
 - `service/session/sessionDecrypt.ets` — `SessionDecryptor.create(masterSecret)` 构造时预派生 contentKeyPair；逐 session `decrypt()` 返回 `DecryptedSession { session, metadata: SessionMetadata | null }`
 - HomePage 主标题 = `basename(path)` 项目名；次要行 = `summary.text` 或 `host · path` fallback
 
-**关键 bug（1c 的债）**：`CryptoBoxKeypairFromSeed` NAPI 原实现是 tweetnacl 风格 `sk = seed`，和 happy-app 用的 **libsodium `crypto_box_seed_keypair`（`sk = SHA-512(seed)[0..32]`）**不兼容。跨 app 的 box 一直不通只是 1c fixture 也是 tweetnacl 侧所以互相对称看不出来。改成 libsodium 风格后 contentKeyPair 的 pk 才对得上服务端存的 `dataEncryptionKey`。修复同步到 `Stage/src/main/cpp/napi_init.cpp` + `packages/nacl/src/cpp/napi/nacl_napi.cpp` 双份源。副作用：1c 的 `tests/vectors/box.json` fixture 下次 regen 时要切到 libsodium 侧（否则会变红）。
+**关键 bug（1c 的债）**：`CryptoBoxKeypairFromSeed` NAPI 原实现是 tweetnacl 风格 `sk = seed`，和 happy-app 用的 **libsodium `crypto_box_seed_keypair`（`sk = SHA-512(seed)[0..32]`）**不兼容。跨 app 的 box 一直不通只是 1c fixture 也是 tweetnacl 侧所以互相对称看不出来。改成 libsodium 风格后 contentKeyPair 的 pk 才对得上服务端存的 `dataEncryptionKey`。修复同步到 `Stage/src/main/cpp/napi_init.cpp` + `packages/nacl/src/cpp/napi/nacl_napi.cpp` 双份源。1e 同步把 `tests/vectors/box.json` fixture 改成 libsodium 侧，generator 加 `libsodiumBoxSeedKeypair()` helper。
+
+### Phase 1e — nacl HAR 化 ✅ 完结
+
+> 2026-04-25 真机端到端：HAR build 出 89 KB `libnacl.so` 装进 hap，Stage 删 cpp 副本后登录 + 解密 metadata 全绿。
+
+`packages/nacl` 重组为标准 HAR 模块，对齐 `packages/wire` 的结构：
+
+```
+packages/nacl/
+  hvigorfile.ts          (harTasks)
+  build-profile.json5    (externalNativeOptions → cpp/CMakeLists.txt, abiFilters)
+  oh-package.json5       (main: ets/Index.ets, deps libnacl.so 自指 type stubs)
+  src/main/
+    module.json5         (type: "har", name: happy_nacl)
+    ets/Index.ets        (named re-export from libnacl.so + 常量)
+    cpp/
+      CMakeLists.txt     (输出 libnacl.so)
+      tweetnacl/         (源)
+      napi/nacl_napi.cpp
+      types/libnacl/     (Index.d.ts + oh-package.json5)
+```
+
+根 `build-profile.json5` 注册 `happy_nacl` 模块；Stage `oh-package.json5` 加 `"happy-nacl": "file:../packages/nacl"` —— ohpm 透传 `libnacl.so` type 依赖给 Stage，不需要再显式 dep。Stage 端 `import nacl from 'libnacl.so'` 不变，删 `Stage/src/main/cpp/` + `externalNativeOptions` 块。
+
+`tests/vectors/box.json` 用 generator 新加的 `libsodiumBoxSeedKeypair()` helper 重生 — keypair 的 `publicKeyHex` / `secretKeyHex` 都换成 libsodium 派生值（之前对的是 tweetnacl 派生值，跟现在的 NAPI 不再一致）。
 
 ## Phase 2+ — 未规划
 
@@ -118,9 +143,9 @@ UI 页面、WebRTC 音频采集/播放、推送（HMS Push）、支付等，等 
 ## 仓库结构速查
 
 - `docs/` — 调研文档 + 本进度表
-- `packages/nacl/` — PoC-A2 独立 NAPI 模块源码（源头），同一份源码内嵌进 Stage/ 用于真机验证（1e 将抽成真 HAR）
-- `packages/wire/` — `happy-wire` HAR 模块，纯 ArkTS 协议类型（authQR + session list 已移，其余随 1b / PoC-A3 扩充）
-- `Stage/` — DevEco entry 模块（HAP），按 MVVM 分层：`ets/pages ets/service ets/api ets/storage ets/common ets/webrtc ets/stageability`
+- `packages/nacl/` — `happy-nacl` HAR 模块，build 出 `libnacl.so` 给消费者
+- `packages/wire/` — `happy-wire` HAR 模块，纯 ArkTS 协议类型（authQR + session + /v1/auth 已移，其余随 1b 扩充）
+- `Stage/` — DevEco entry 模块（HAP），按 MVVM 分层：`ets/pages ets/service ets/api ets/storage ets/common`
 - `libs/webrtc-1.0.0.har` — vendored `@ohos/webrtc`（绕开 ohpm 镜像超时）
 - `tests/vectors/` — tweetnacl-js 生成的 secretbox / box / sign 对拍 fixture
 

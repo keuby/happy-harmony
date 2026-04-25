@@ -1,0 +1,11 @@
+{
+  "name": "happy-nacl",
+  "version": "1.0.0",
+  "description": "TweetNaCl NAPI bindings for HarmonyOS Next, packaged as a HAR.",
+  "main": "./src/main/ets/Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "libnacl.so": "file:./src/main/cpp/types/libnacl"
+  }
+}

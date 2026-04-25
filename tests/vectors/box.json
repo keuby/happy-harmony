@@ -1,19 +1,19 @@
 {
   "generator": "tweetnacl@1.0.3",
-  "generatedAt": "2026-04-23T07:31:09.313Z",
-  "note": "X25519 + XSalsa20-Poly1305 authenticated box. ciphertext = [16-byte MAC || encrypted payload]. Keypairs derived via box.keyPair.fromSecretKey(seed).",
+  "generatedAt": "2026-04-25T01:57:02.260Z",
+  "note": "X25519 + XSalsa20-Poly1305 authenticated box. ciphertext = [16-byte MAC || encrypted payload]. Keypairs derived via libsodium-style crypto_box_seed_keypair (sk = SHA-512(seed)[0..32]).",
   "keypairs": [
     {
       "name": "sender",
       "seedHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "publicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "secretKeyHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "publicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "secretKeyHex": "05df8dd9e9eac760a1b68c1565388b1e93049b155baa8808cf4b4985f8665ba8"
     },
     {
       "name": "recipient",
       "seedHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "publicKeyHex": "6b0b616d718e53691236d3be3ce6d44f9d28836426d81305d131f488206f8d2b",
-      "secretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "publicKeyHex": "88b7d0feb1dbdc9cdefa2a814503ee2bbe5468e17a3d0068e4f823bf2f94d142",
+      "secretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c"
     }
   ],
   "vectors": [
@@ -21,11 +21,11 @@
       "name": "empty",
       "plaintextHex": "",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "senderSecretKeyHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "recipientPublicKeyHex": "6b0b616d718e53691236d3be3ce6d44f9d28836426d81305d131f488206f8d2b",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "ciphertextHex": "26918223534c0156c9311344bb6dcf8e",
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "senderSecretKeyHex": "05df8dd9e9eac760a1b68c1565388b1e93049b155baa8808cf4b4985f8665ba8",
+      "recipientPublicKeyHex": "88b7d0feb1dbdc9cdefa2a814503ee2bbe5468e17a3d0068e4f823bf2f94d142",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c",
+      "ciphertextHex": "35c97301b8b6949f87c7ba32c1cd6f0c",
       "plaintextLen": 0,
       "ciphertextLen": 16
     },
@@ -33,11 +33,11 @@
       "name": "one_byte",
       "plaintextHex": "42",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "senderSecretKeyHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "recipientPublicKeyHex": "6b0b616d718e53691236d3be3ce6d44f9d28836426d81305d131f488206f8d2b",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "ciphertextHex": "73440bf041e1946234de9848454a97fbcf",
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "senderSecretKeyHex": "05df8dd9e9eac760a1b68c1565388b1e93049b155baa8808cf4b4985f8665ba8",
+      "recipientPublicKeyHex": "88b7d0feb1dbdc9cdefa2a814503ee2bbe5468e17a3d0068e4f823bf2f94d142",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c",
+      "ciphertextHex": "b23dd79b105df3bca16e8050e55f1cfb8e",
       "plaintextLen": 1,
       "ciphertextLen": 17
     },
@@ -45,11 +45,11 @@
       "name": "short_ascii",
       "plaintextHex": "68656c6c6f20626f78",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "senderSecretKeyHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "recipientPublicKeyHex": "6b0b616d718e53691236d3be3ce6d44f9d28836426d81305d131f488206f8d2b",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "ciphertextHex": "90395c09fd6729c0e976ed6966b89d7ce59b8272220424de51",
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "senderSecretKeyHex": "05df8dd9e9eac760a1b68c1565388b1e93049b155baa8808cf4b4985f8665ba8",
+      "recipientPublicKeyHex": "88b7d0feb1dbdc9cdefa2a814503ee2bbe5468e17a3d0068e4f823bf2f94d142",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c",
+      "ciphertextHex": "7f30e5ea3512b4a75aaf42524bb6dc91a469c99790d6f166f1",
       "plaintextLen": 9,
       "ciphertextLen": 25
     },
@@ -57,11 +57,11 @@
       "name": "boundary_31",
       "plaintextHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "senderSecretKeyHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "recipientPublicKeyHex": "6b0b616d718e53691236d3be3ce6d44f9d28836426d81305d131f488206f8d2b",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "ciphertextHex": "ab0a8621311f35a5d6fc48fb63fb5c388dffec1d492140b621c9410c74f8165cb4907ba44b465419b1aacdcf6515e0",
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "senderSecretKeyHex": "05df8dd9e9eac760a1b68c1565388b1e93049b155baa8808cf4b4985f8665ba8",
+      "recipientPublicKeyHex": "88b7d0feb1dbdc9cdefa2a814503ee2bbe5468e17a3d0068e4f823bf2f94d142",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c",
+      "ciphertextHex": "0b69d2d718f2d297766602392b26ccf3cc0da7f8fbf3950e81657f35530364b150acd5c666ba95053e6cbf3b4f4f83",
       "plaintextLen": 31,
       "ciphertextLen": 47
     },
@@ -69,11 +69,11 @@
       "name": "boundary_32",
       "plaintextHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "senderSecretKeyHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "recipientPublicKeyHex": "6b0b616d718e53691236d3be3ce6d44f9d28836426d81305d131f488206f8d2b",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "ciphertextHex": "49bad88cade9a59f33131772a592a7148dffec1d492140b621c9410c74f8165cb4907ba44b465419b1aacdcf6515e05f",
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "senderSecretKeyHex": "05df8dd9e9eac760a1b68c1565388b1e93049b155baa8808cf4b4985f8665ba8",
+      "recipientPublicKeyHex": "88b7d0feb1dbdc9cdefa2a814503ee2bbe5468e17a3d0068e4f823bf2f94d142",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c",
+      "ciphertextHex": "f7855f3f7215147524dba765f217b391cc0da7f8fbf3950e81657f35530364b150acd5c666ba95053e6cbf3b4f4f83eb",
       "plaintextLen": 32,
       "ciphertextLen": 48
     },
@@ -81,11 +81,11 @@
       "name": "boundary_33",
       "plaintextHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "senderSecretKeyHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "recipientPublicKeyHex": "6b0b616d718e53691236d3be3ce6d44f9d28836426d81305d131f488206f8d2b",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "ciphertextHex": "842b5036a69c46669506125873225abd8dffec1d492140b621c9410c74f8165cb4907ba44b465419b1aacdcf6515e05f2e",
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "senderSecretKeyHex": "05df8dd9e9eac760a1b68c1565388b1e93049b155baa8808cf4b4985f8665ba8",
+      "recipientPublicKeyHex": "88b7d0feb1dbdc9cdefa2a814503ee2bbe5468e17a3d0068e4f823bf2f94d142",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c",
+      "ciphertextHex": "98c9c53040582d9eb0034c9913aeb307cc0da7f8fbf3950e81657f35530364b150acd5c666ba95053e6cbf3b4f4f83ebdd",
       "plaintextLen": 33,
       "ciphertextLen": 49
     },
@@ -93,11 +93,11 @@
       "name": "kb_block",
       "plaintextHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "senderSecretKeyHex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "recipientPublicKeyHex": "6b0b616d718e53691236d3be3ce6d44f9d28836426d81305d131f488206f8d2b",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "ciphertextHex": "52e3077af61884002118168986940bfe8dffec1d492140b621c9410c74f8165cb4907ba44b465419b1aacdcf6515e05f2e65035c43b9ca51cf20b4773e207cc4690f1b6413a8b8182d8d693af73beee0ea320d85a037b2588035cdb88674f4b2b9fbf421773a3e3f20d4dc2d58ab91f8a6a013801e279e30456190b37e459c35ebae89cb9819fbc43e9cf172820bb9907dfcec0a497e0909343960e2c3de03ca588f36a50060fc470bbf43941dbd67d5d9ccab3b396430c3e714d9ec55cd9e658dad50efc2579baedb040a9c445aa0276e482d2512031ec6599cbcd54b92f99de40db970388931181d553df67f40f32dbf939a798520f92737017f330fa06f359d6777305c5669d531164d25184afce8ce38f99ea7eef3f9787558afa6077ffffe6c5d3288d506fcfa5255afa75d1c997bb2b49fdc85e8c2ec590352ea6abc462a3342399c16e0a71c34a39e4ac29655419d4395a8b7a2a18cbb7f005535fe7472c9d3c8d09f8c4b5282ffd71ba7e4e1da88c22a53650120235c8610193d3d5dd787c448dd87a532593752a1bb5f9f792753b85c08420507b264b0edf807283241a421ffc5b16778afadc189ffca268cc6be39c095853e8f7242df69f530c72e7c3226610fd505952556321eee16e2b4fbb00a2dccc76ca9d3d85295c8c2ef63e058d288de7fe5d38fba62fafa22c727e5249c3d40f8b8d82fa0ca65c4039ea37405c415c0c9159050fbf26a3707e0ff2af52dbb528b4b7d36798c926e9fdbca493162b2661c45be13cc7df6b66c833db924549cfe1af7010c53652e695916c456720bb26d7b98561a7730ed373af5faa3691e1c38b295ba7179cb26352ec150b0e58c8eda8270f43244dea512e3a57f98da4aa6690c431d926f2047cfb3ae0e51c5f8d9f5ab85c44c44b9691e67a02715fdd6a9a149e61cc1c004f77e20425522617df6bbfba651f17d95c3648e6835b3dfded29b8853bf305e70d0ba8cd9e63e6ffb67778f7f236baef0d90550217c49169f83449082dbd71c41ef716a1f07b5c685bf39c07f7db03c48bc3198b01163c0c18ddb0f6adf403d753390e7e1ab88b23b7a56b5cc0038b1b9a1f5ec9f66c4406ae1151b7213cb833c6c9f8302a658281dcae0212b0e65beba46752317adc75052657374a10cd71c7af9075ceb1d56babde45499a5e28d7c10767a299ab0348bf1a46f42c8391b22fbcd40ad292523485c4e8b3b8ead901742e887da88a33a118dab9bfa1e4e3227eb83c5f797467a9cc10f2d8bcfbce217035acfacf385e7f85e0f247c17400cd47f45085012abc9e88ed10076115b4260c1c094ddae5b49c7eff7e03654ffd2a888d3432fa15dbd188ca6f46ad0f9a3703ea5b5ab8c6cbb5fce583017e62be1f01fb40c181efbb039d730a8bb8527a399f164e4e0025c0c9bfa19ab87e397450bb18812a2557b8577b5fc96a13c81cd27d5855016047c",
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "senderSecretKeyHex": "05df8dd9e9eac760a1b68c1565388b1e93049b155baa8808cf4b4985f8665ba8",
+      "recipientPublicKeyHex": "88b7d0feb1dbdc9cdefa2a814503ee2bbe5468e17a3d0068e4f823bf2f94d142",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c",
+      "ciphertextHex": "f9137a051bea11f0136b2fea07de81d6cc0da7f8fbf3950e81657f35530364b150acd5c666ba95053e6cbf3b4f4f83ebddc7e274fe88e9ed889a9a798b5b3821f6b549e03d459195ab69ffdb35ff857bbeadbcd6c7558c5efa07dd5112d7f12d3250dfb36afd9585417226c739d0f86e25f911a649d5ab41344630abfbc8a9d257cd9aa11ff6bd7835160dd6df2fc4cec4f405f5038dad9a4238b3bd2152a5b39174ddbdbf1c2117309b0f7106e168138f81d2eca8b76311053c5bf6719bd85c3df78766b33d94ae0546439cd5a5c6977fbe03373302268caf62611d711fe6b36cbcad2ca87509e9768b7003b76a8c3e2a93fcdc39cb91df95840a57910e49c28b6b6c4fded44b5b8902caafca67eb483e2235626bd8cbebf5184072c22818a85b3474af2dfa1610fb3a6472a6b08fa96f9b5d3b672fe69c12254cbfffa920e12badb35b9c02cbe9069a0ad5c9ed188c6229b42bd871dc512f8947d762b000c5c9a71574148d92aa65d272b4b6cec12acb78ab6eaacadf98d7bc57a343ae14aae8e19b0b0c239005844e2a52a086029d30b00a860620b3243cd37682760d656c7c93576df823fddf503b08db7ff394d7b0a3e85eda7d8b60791e815e9b2863d7cc118ba3412403eaaf27a51c2a3ca9838d886e53ee98d9c4aa55e5b5ddbe04b353e74b364dca31d44ac37cc561f6aa3e8748a00a7ecc6d0160b31dbb2927da6af608c72f5de70bfb9227e1174cf020983eddd34b427559f7f0caaa03c46449fcc4a49f74369246e33a5f5068da0dfc4ccd7e6c6bbf89b530bf69ecce8f19bf8b19c337fea228d15e91cb70ab4da3ab7e853bfa550b58319fa5dcc73c0166685db19c335eb6b508fa4026b6dbec58aa4476e6d8b3654e2e8fb74e35a77d82679faa2ac6d79404559f7547492ca7125dcfbeecce4fb6139f425006dda1ac99d1a6a22b8bb68415cd42eac5d315ff68be9b80a27951ba39b33388017d59bf17c1724c59f66bdd7938cd5be56752fa5acbe3c4c93e0584b0c2ee73543a446116a103e89965227533d25b2a1c3e4876d4234b53f62f0cf5f3502da7db9ea94748f68a22aeea0dc511896c6c7dbd33eaa1f3a366e3d7d0f0e808d987fa940ae0d08e4cc4aa0e067dd506e612b443e47845e9ed91201033b66437157147a83f70b46b2f788afe283a5b5372e957bf2410f3a5551bdba3c03c2b6dec39a28243df0da081e3938c07d90d173adc1cb88b40dc2a9f175cfb2ab5f876edba61285d0f4162f247ce19b1bfdaf10146832ab25c4401824272fd969d9134666bde06179ccd01b88a39b8e3bd17074297c5b9d5a4693381d2842e5899550bbb53919bd4c57af6ed428f339034f93edc9b5ca06eff36e61c6af5cce528b85088d4ba3df40c1a6f67e0c7800ca1d386ff22407a79708af6d0112adb58b9ffc076b156f71514ab99d660aca655495a88cf2b0960afe2c72138",
       "plaintextLen": 1024,
       "ciphertextLen": 1040
     }
@@ -105,24 +105,24 @@
   "mutated": [
     {
       "name": "empty__mac_flipped",
-      "ciphertextHex": "27918223534c0156c9311344bb6dcf8e",
+      "ciphertextHex": "34c97301b8b6949f87c7ba32c1cd6f0c",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c"
     },
     {
       "name": "one_byte__mac_flipped",
-      "ciphertextHex": "72440bf041e1946234de9848454a97fbcf",
+      "ciphertextHex": "b33dd79b105df3bca16e8050e55f1cfb8e",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c"
     },
     {
       "name": "short_ascii__mac_flipped",
-      "ciphertextHex": "91395c09fd6729c0e976ed6966b89d7ce59b8272220424de51",
+      "ciphertextHex": "7e30e5ea3512b4a75aaf42524bb6dc91a469c99790d6f166f1",
       "nonceHex": "030303030303030303030303030303030303030303030303",
-      "senderPublicKeyHex": "14ca9e4d387bccf35746e0407daaacc6b28a4f8445ef5a5158894db983e24070",
-      "recipientSecretKeyHex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "senderPublicKeyHex": "552291f02c9317519633021302d0f7ba39b1cf32310e23ee7aa6a4312ae4a027",
+      "recipientSecretKeyHex": "78c3e4691b39f85ac7be2e742514ab1f2ce89632e1021c555e1d678df49af48c"
     }
   ]
 }

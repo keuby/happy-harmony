@@ -18,11 +18,22 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const happyNodeModules = resolve(__dirname, '../../../happy/node_modules');
 const require = createRequire(happyNodeModules + '/');
 const nacl = require('tweetnacl');
+
+// libsodium's crypto_box_seed_keypair: sk = SHA-512(seed)[0..32];
+// pk = scalarmult_base(sk). tweetnacl-js's box.keyPair.fromSecretKey
+// uses the seed directly as sk (no hash) — that's a different keypair.
+// happy-app + happy-server use sodium.crypto_box_seed_keypair, so the
+// HarmonyOS NAPI must match the libsodium derivation, not tweetnacl's.
+function libsodiumBoxSeedKeypair(seed) {
+  const sk = new Uint8Array(createHash('sha512').update(Buffer.from(seed)).digest().slice(0, 32));
+  return nacl.box.keyPair.fromSecretKey(sk);
+}
 
 const toHex = (u8) => Buffer.from(u8).toString('hex');
 const fromHex = (s) => new Uint8Array(Buffer.from(s, 'hex'));
@@ -110,13 +121,14 @@ const generatedAt = new Date().toISOString();
 // ---------------------------------------------------------------------------
 
 {
-  // Deterministic seeds for both ends. box.keyPair.fromSecretKey(seed) maps
-  // seed → { publicKey: scalarmult_base(seed), secretKey: seed }, which is
-  // exactly libsodium's crypto_box_seed_keypair behaviour.
+  // Deterministic seeds for both ends. libsodiumBoxSeedKeypair(seed)
+  // maps seed → SHA-512(seed)[0..32] = sk → scalarmult_base(sk) = pk
+  // — matches libsodium's crypto_box_seed_keypair, which is what
+  // happy-app uses upstream and what the harmony NAPI now does.
   const senderSeed = fromHex('aa'.repeat(32));
   const recipSeed = fromHex('bb'.repeat(32));
-  const sender = nacl.box.keyPair.fromSecretKey(senderSeed);
-  const recipient = nacl.box.keyPair.fromSecretKey(recipSeed);
+  const sender = libsodiumBoxSeedKeypair(senderSeed);
+  const recipient = libsodiumBoxSeedKeypair(recipSeed);
   const nonce = fromHex('030303030303030303030303030303030303030303030303');
 
   const keypairs = [
@@ -174,7 +186,7 @@ const generatedAt = new Date().toISOString();
   const out = {
     generator: 'tweetnacl@' + tweetnaclVersion,
     generatedAt,
-    note: 'X25519 + XSalsa20-Poly1305 authenticated box. ciphertext = [16-byte MAC || encrypted payload]. Keypairs derived via box.keyPair.fromSecretKey(seed).',
+    note: 'X25519 + XSalsa20-Poly1305 authenticated box. ciphertext = [16-byte MAC || encrypted payload]. Keypairs derived via libsodium-style crypto_box_seed_keypair (sk = SHA-512(seed)[0..32]).',
     keypairs,
     vectors,
     mutated,

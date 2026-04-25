@@ -1,9 +1,11 @@
-// Re-export the NAPI-backed nacl surface from libstage.so with typed
-// ArkTS wrappers. This keeps callers from importing 'libstage.so'
-// directly so 1b can later swap the backing .so (or split into a HAR)
-// without touching consumers.
+// NaCl primitive wrappers backed by libnacl.so (built and shipped by
+// the happy-nacl HAR). Stage imports the .so directly with a default
+// import — happy-nacl HAR's main entry would re-wrap, but ohpm doesn't
+// flow types transitively for that path under arkts strict, so we go
+// straight to the typed .d.ts. `randomBytes` stays here because Stage
+// prefers @ohos.security.cryptoFramework's RNG over the NAPI's own.
 
-import nacl from 'libstage.so';
+import nacl from 'libnacl.so';
 import cryptoFramework from '@ohos.security.cryptoFramework';
 
 export interface KeyPair {
@@ -60,9 +62,7 @@ export function cryptoSignVerifyDetached(signature: Uint8Array, message: Uint8Ar
 }
 
 /**
- * Cryptographic random. @ohos.security.cryptoFramework.createRandom() is
- * the system-sanctioned entropy source; behind the scenes it reads
- * /dev/urandom just like the NAPI's own randombytes.c.
+ * Cryptographic random.
  *
  * @param { number } n - Number of random bytes to return.
  * @returns { Uint8Array } Random byte buffer of length n.

@@ -79,6 +79,18 @@
           ]
         }
       ]
+    },
+    {
+      "name": "happy_nacl",
+      "srcPath": "./packages/nacl",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }

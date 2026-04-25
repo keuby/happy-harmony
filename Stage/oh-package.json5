@@ -6,8 +6,8 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "libstage.so": "file:./src/main/cpp/types/libstage",
     "@ohos/webrtc": "file:../libs/webrtc-1.0.0.har",
-    "happy-wire": "file:../packages/wire"
+    "happy-wire": "file:../packages/wire",
+    "happy-nacl": "file:../packages/nacl"
   }
 }
