@@ -2,7 +2,7 @@
 
 HarmonyOS Next 原生 ArkTS 版 slopus/happy。本文件是跨阶段进度的**单一可信来源**——每完成里程碑更新这里，不新建状态文档。
 
-> 最后更新：2026-04-25
+> 最后更新：2026-04-25（Restore with Secret Key 真机通）
 
 ## Phase 0 — 关键风险验证 ✅ 完结
 
@@ -34,12 +34,13 @@ happy 的 LiveKit 实际是 ElevenLabs ConvAI 的底层传输（见 `happy-serve
 |---|---|---|
 | **1c** nacl 补全 | `crypto_box_*` + `crypto_sign_*` NAPI 扩展（authQR 登录必需） | ✅ 真机全绿 |
 | **1a** 项目脚手架 | MVVM 目录、Navigation、api 层、主题 token、wire HAR、会话列表骨架 | ✅ 真机端到端验证 |
-| **1b** LiveKit 客户端 | WebSocket + protobuf v9 信令层 → `@ohos/webrtc` | ⏸ 依赖 1a |
-| **1d** `happy-wire` 协议 | Zod → ArkTS 类型移植（authQR + session 已移，messages / realtime 待补） | ⏳ 部分（随 1b/PoC-A3 逐步扩） |
-| **1e** nacl HAR 化 | `packages/nacl` 升级为真正的 HAR 模块（带 native 编译），替换 `Stage/` 里的双份同步副本 | ⏸ blocked by 1a |
-| **PoC-A3** AES-256-GCM 互操作 | 对拍 `rn-encryption` 的 AES-GCM wire 布局，用 `@ohos.security.cryptoFramework` 解 session metadata/agentState | ⏸ 独立 PoC 节奏 |
+| **1f** Restore with Secret Key | `/v1/auth` 自助换 token，替换 DEV_TOKEN 作为主登录入口 | ✅ 真机端到端 |
+| **1b** LiveKit 客户端 | WebSocket + protobuf v9 信令层 → `@ohos/webrtc` | ⏳ 待开工 |
+| **1d** `happy-wire` 协议 | Zod → ArkTS 类型移植（authQR + session + /v1/auth 已移，messages / realtime 待补） | ⏳ 部分（随 1b/PoC-A3 逐步扩） |
+| **1e** nacl HAR 化 | `packages/nacl` 升级为真正的 HAR 模块（带 native 编译），替换 `Stage/` 里的双份同步副本 | ⏳ 待开工 |
+| **PoC-A3** AES-256-GCM 互操作 | 对拍 `rn-encryption` 的 AES-GCM wire 布局，用 `@ohos.security.cryptoFramework` 解 session metadata/agentState | ⏳ 独立 PoC 节奏 |
 
-1a 已完结（见下）。剩余 1b / 1d / 1e / PoC-A3 可并行推进——1e 和 PoC-A3 互不依赖，1b 单独沿 WebRTC/LiveKit 线。
+1a / 1c / 1f 已完结（见下）。剩余 1b / 1d / 1e / PoC-A3 可并行推进——1e 和 PoC-A3 互不依赖，1b 单独沿 WebRTC/LiveKit 线。
 
 ### Phase 1c — nacl NAPI 补全 ✅ 完结
 
@@ -64,12 +65,25 @@ happy 的 LiveKit 实际是 ElevenLabs ConvAI 的底层传输（见 `happy-serve
 6. **会话列表骨架**：`service/session/sessionList.ets` 包 `fetchSessions()` 调 `/v1/sessions`。`HomePage.ets` 用 `List + ForEach + @ObjectLink` 渲染 active dot / id 截断 / "metadata pending" 占位 / `updatedAt`。loading / error / empty / list 四状态完整。
 7. **ArkTS strict warning 清零**：所有 "Function may throw exceptions" 警告通过 JSDoc `@throws { BusinessError }` 链式标注消除。
 
-### Phase 1a 技术债（交给后续里程碑）
+### Phase 1a 技术债（已还清 / 留存）
 
-- **DEV_TOKEN bootstrap hack**：`Stage/src/main/ets/service/auth/authStore.ets` 里有一个 `DEV_TOKEN: string` 常量，非空时 `initAuth` 跳过 QR 流程直接伪造 credentials 入库。用于 1a 真机验证绕开登录。**commit 前必须清空**（文件内已有行内警告）。  
-  真正可用的 QR login 需 LoginPage 加 QR 渲染（见下一条），否则 DEV_TOKEN 是 1a 的替身。
-- **QR 码渲染缺失**：account auth 流程的 `happy:///account?<base64url>` URL 只能通过相机扫码被 happy-app 识别（`useConnectAccount.onModernBarcodeScanned`；无手动输入 UI，无 deep link route）。LoginPage 目前只显示 URL 文本字符串，扫码走不通。Phase 2 前补 QR 渲染（HarmonyOS 有官方 `QRCode()` 组件）。
+- ~~**DEV_TOKEN bootstrap hack**~~ ✅ 2026-04-25 清除。登录改由 **Restore with Secret Key** 路径承担（见下）。
+- ~~**QR 码渲染缺失**~~ ✅ 2026-04-25 LoginPage 加 `QRCode()` 组件（220×220，token 配色）。扫码链路**未打通**：happy-app 的 Account 通道只有相机入口无"粘贴 URL" UI；HarmonyOS 生态可扫码的 happy 客户端尚无（卓易通跑 happy-android 调不起相机）。当前仅保留 UI 以便未来接 Terminal auth 或其他 approver 渠道。
 - **PoC-A3（AES-256-GCM 互操作）未做**：`/v1/sessions` 响应里每个 Session 的 `metadata` / `agentState` 是 AES-GCM 密文（经 `rn-encryption` 私有布局：`[0x00 version byte || AES-GCM ciphertext]`），UI 显示"metadata pending"。解开后才能显示 path / host / summary。工作量独立，和 1b/1e 可并行。
+
+### Phase 1f — Restore with Secret Key ✅ 完结
+
+> 2026-04-25 真机端到端：粘贴 `XXXXX-XXXXX-…` secret → Log in → 1.8 s 进 HomePage → 拉到 2 条 sessions。
+
+happy 账户的根密钥是 32 字节 account secret；`authGetToken(secret)` 用 ed25519 challenge-sign 直接 self-service 换 token，**不需要 approver**。对标 happy-app `/restore/manual`。Stage 加一条登录入口：
+
+- `Stage/src/main/ets/common/crypto/secretKeyBackup.ets` — base32 解码 + `normalizeSecretKey`（兼容 `XXXXX-XXXXX-…` 分组格式、0/1/8/9 OCR 纠错、base64 回退）。只做解码方向（Stage 不展示 secret）。
+- `Stage/src/main/ets/service/auth/authChallenge.ets` — 复用 PoC-A2 的 `cryptoSignKeypairFromSeed` + `cryptoSignDetached`；1c 预留的 sign-keypair + detached-sig NAPI surface 终于有真实调用者。
+- `Stage/src/main/ets/service/auth/authGetToken.ets` — POST `/v1/auth`，公钥 / 挑战 / 签名走**标准 base64**（和服务端 `privacyKit.decodeBase64` 一致，非 base64url）。
+- `service/auth/authStore.ets` 加 `loginWithSecret(input)`，与 QR 流程共用 `authenticating` 态；LoginPage 按 `pendingPublicKey` 是否为空分派 UI。
+- `packages/wire/src/main/ets/auth.ets` 加 `AuthLoginBody / AuthLoginResponse` wire schema。
+
+**为什么这条路比完整 QR approve 更合适做主登录路径**：零外部依赖（不需要"另一台已登录设备"），和 happy-app 的 `/restore/manual` 行为等价，是官方的账户恢复通道而非 hack。扫码入口未来可随 Phase 2 补齐。
 
 ## Phase 2+ — 未规划
 

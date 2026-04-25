@@ -1,7 +1,9 @@
-// Challenge-response signature used for the secondary /v1/auth token
-// refresh path. Not exercised by the 1a MVP flow but kept here so the
-// sign-keypair + detached-sig NAPI surface has a real caller and
-// there's an easy unit-test hook once 1b/1d lands.
+// Ed25519 challenge-response for POST /v1/auth self-service login.
+// Mirrors happy-app/sources/auth/authChallenge.ts: derive the ed25519
+// signing keypair from the 32-byte account secret and sign a fresh
+// random challenge. Server verifies the signature against publicKey and
+// issues a bearer token — no approver needed when the caller already
+// holds the account secret (restore / DIY login flow).
 
 import { cryptoSignDetached, cryptoSignKeypairFromSeed, randomBytes } from '../../common/crypto/libsodium';
 
@@ -11,6 +13,11 @@ export interface AuthChallenge {
   publicKey: Uint8Array;
 }
 
+/**
+ * @throws { BusinessError } 401 - Parameter error.
+ * @throws { BusinessError } 17620001 - Memory error.
+ * @throws { BusinessError } 17620002 - Runtime error.
+ */
 export function authChallenge(secret: Uint8Array): AuthChallenge {
   const kp = cryptoSignKeypairFromSeed(secret);
   const challenge = randomBytes(32);

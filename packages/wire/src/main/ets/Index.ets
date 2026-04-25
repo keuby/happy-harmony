@@ -1,2 +1,2 @@
-export { AuthRequestBody, AuthRequestResponse } from './auth';
+export { AuthRequestBody, AuthRequestResponse, AuthLoginBody, AuthLoginResponse } from './auth';
 export { Session, SessionListResponse } from './session';

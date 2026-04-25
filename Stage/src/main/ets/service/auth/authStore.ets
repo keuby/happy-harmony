@@ -3,10 +3,14 @@
 // Lifecycle:
 //   loading → unauthenticated        no persisted credentials
 //   loading → authenticated          persisted credentials found
-//   unauthenticated → authenticating user tapped Connect
-//   authenticating → authenticated   QR approval + decrypt succeeded
-//   authenticating → unauthenticated user tapped Cancel, or error
+//   unauthenticated → authenticating user tapped Connect (QR) or submitted Secret Key (restore)
+//   authenticating → authenticated   QR approval + decrypt, or /v1/auth challenge succeeded
+//   authenticating → unauthenticated user tapped Cancel, or request failed
 //   authenticated → unauthenticated  user tapped Logout
+//
+// Both login paths share the 'authenticating' status. `pendingPublicKey`
+// disambiguates in the UI: QR populates it with the `happy:///account?…`
+// URL, secret-key restore leaves it empty.
 //
 // Single module-level instance; Index.ets binds it via @State and passes
 // it to the two pages. Mutations happen only through the exported
@@ -21,6 +25,7 @@ import {
   authQRWait,
   generateAuthKeyPair,
 } from './authQR';
+import { authGetToken } from './authGetToken';
 import {
   Credentials,
   clearCredentials,
@@ -30,16 +35,10 @@ import {
 } from '../../storage/credentials';
 import { clearBearerToken, setBearerToken } from '../../api/rest';
 import { encodeBase64, encodeBase64Url } from '../../common/crypto/base64';
+import { normalizeSecretKey } from '../../common/crypto/secretKeyBackup';
 
 const LOG_DOMAIN = 0x0000;
 const LOG_TAG = 'authStore';
-
-// Dev bootstrap: when non-empty, initAuth short-circuits the QR flow and
-// writes these values straight into the credential store on first launch.
-// Used for local end-to-end testing against a self-hosted happy-server.
-// MUST stay '' on main. Paste a dev token from dev-secrets.local.json5
-// (gitignored) only for local runs, then revert before committing.
-const DEV_TOKEN: string = '';
 
 export type AuthStatus = 'loading' | 'unauthenticated' | 'authenticating' | 'authenticated';
 
@@ -68,11 +67,6 @@ export async function initAuth(ctx: common.Context): Promise<void> {
     if (saved !== null) {
       applyAuthenticated(saved);
       hilog.info(LOG_DOMAIN, LOG_TAG, 'restored credentials from storage');
-    } else if (DEV_TOKEN !== '') {
-      const devCreds: Credentials = { token: DEV_TOKEN, secret: new Uint8Array(32) };
-      await saveCredentials(devCreds);
-      applyAuthenticated(devCreds);
-      hilog.info(LOG_DOMAIN, LOG_TAG, 'dev bootstrap: injected DEV_TOKEN credentials');
     } else {
       authStore.status = 'unauthenticated';
       hilog.info(LOG_DOMAIN, LOG_TAG, 'no stored credentials; awaiting login');
@@ -126,6 +120,49 @@ async function runLogin(pair: AuthKeyPair): Promise<void> {
     }
   } finally {
     currentKeyPair = null;
+  }
+}
+
+/**
+ * Restore-with-Secret-Key flow: no approver, no QR. The user pastes the
+ * 32-byte account secret (formatted base32 backup or plain base64) that
+ * was previously displayed in another logged-in happy client's
+ * Settings→Account. We derive the ed25519 key, sign a challenge, trade
+ * that for a token via /v1/auth, and land directly in 'authenticated'.
+ *
+ * Shares the 'authenticating' status with the QR flow. LoginPage
+ * distinguishes the two by checking `pendingPublicKey`: QR sets it to
+ * the `happy:///account?...` URL, this path leaves it empty.
+ */
+export async function loginWithSecret(input: string): Promise<void> {
+  if (authStore.status !== 'unauthenticated') return;
+  authStore.lastError = '';
+
+  let secret: Uint8Array;
+  try {
+    secret = normalizeSecretKey(input);
+  } catch (e) {
+    authStore.lastError = (e as Error).message;
+    hilog.info(LOG_DOMAIN, LOG_TAG, 'restore rejected: %{public}s', authStore.lastError);
+    return;
+  }
+
+  authStore.pendingPublicKey = '';
+  authStore.status = 'authenticating';
+  hilog.info(LOG_DOMAIN, LOG_TAG, 'restore started');
+
+  try {
+    const token = await authGetToken(secret);
+    const creds: Credentials = { token, secret };
+    await saveCredentials(creds);
+    applyAuthenticated(creds);
+    hilog.info(LOG_DOMAIN, LOG_TAG, 'restore complete; token=%{public}s...', token.substring(0, 8));
+  } catch (e) {
+    authStore.status = 'unauthenticated';
+    authStore.pendingPublicKey = '';
+    const msg = e instanceof Error ? e.message : JSON.stringify(e);
+    authStore.lastError = `restore failed: ${msg}`;
+    hilog.error(LOG_DOMAIN, LOG_TAG, 'restore error: %{public}s', msg);
   }
 }
 

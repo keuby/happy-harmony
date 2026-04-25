@@ -18,3 +18,23 @@ export interface AuthRequestResponse {
   /** base64 box bundle containing the 32-byte account secret. */
   response?: string;
 }
+
+/**
+ * POST /v1/auth request body. Challenge-response login for a known
+ * account: client proves ownership of the ed25519 key by signing a
+ * random 32-byte challenge. Server returns a bearer token.
+ */
+export interface AuthLoginBody {
+  /** base64 of ed25519 public key derived from the 32-byte account secret. */
+  publicKey: string;
+  /** base64 of the 32 random challenge bytes the client generated. */
+  challenge: string;
+  /** base64 of the 64-byte ed25519 signature over `challenge`. */
+  signature: string;
+}
+
+/** POST /v1/auth response. */
+export interface AuthLoginResponse {
+  success: boolean;
+  token: string;
+}
