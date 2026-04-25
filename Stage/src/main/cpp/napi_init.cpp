@@ -186,9 +186,17 @@ napi_value CryptoBoxKeypairFromSeed(napi_env env, napi_callback_info info) {
   size_t seed_len = 0;
   if (!GetU8View(env, args[0], kBoxSeedBytes, 0, &seed, &seed_len)) return nullptr;
 
+  // libsodium's crypto_box_seed_keypair: sk = SHA-512(seed)[0..32],
+  // pk = scalarmult_base(sk). Must match this exactly — happy-server's
+  // session.dataEncryptionKey is boxed against the libsodium-derived
+  // public key, and happy-app's sodium.crypto_box_seed_keypair goes
+  // through the same hash. A bare memcpy(sk, seed) here would derive
+  // a different keypair and every cross-app box would mismatch.
+  uint8_t h[64];
+  crypto_hash_sha512(h, seed, kBoxSeedBytes);
   uint8_t sk[kBoxSecretKeyBytes];
   uint8_t pk[kBoxPublicKeyBytes];
-  std::memcpy(sk, seed, kBoxSeedBytes);
+  std::memcpy(sk, h, kBoxSecretKeyBytes);
   int rc = crypto_scalarmult_base(pk, sk);
   if (rc != 0) {
     napi_throw_error(env, nullptr, "crypto_scalarmult_base failed");

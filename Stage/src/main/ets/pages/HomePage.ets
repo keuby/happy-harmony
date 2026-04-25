@@ -1,15 +1,15 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
-import { Session } from 'happy-wire';
-
 import { AuthState, logout } from '../service/auth/authStore';
-import { fetchSessions } from '../service/session/sessionList';
+import { fetchDecryptedSessions } from '../service/session/sessionList';
+import { DecryptedSession } from '../service/session/sessionDecrypt';
+import { decodeBase64 } from '../common/crypto/base64';
 import { Radius, Spacing } from '../common/constants/spacing';
 
 @Component
 export struct HomePage {
   @ObjectLink state: AuthState;
-  @State sessions: Session[] = [];
+  @State sessions: DecryptedSession[] = [];
   @State loadError: string = '';
   @State loading: boolean = true;
 
@@ -18,9 +18,12 @@ export struct HomePage {
     this.loadError = '';
     const run = async (): Promise<void> => {
       try {
-        const list = await fetchSessions();
+        const masterSecret = decodeBase64(this.state.secretBase64);
+        const list = await fetchDecryptedSessions(masterSecret);
         this.sessions = list;
-        hilog.info(0x0000, 'homePage', 'fetched %{public}d sessions', list.length);
+        let decoded = 0;
+        for (let i = 0; i < list.length; i++) if (list[i].metadata !== null) decoded++;
+        hilog.info(0x0000, 'homePage', 'fetched %{public}d sessions (%{public}d decrypted)', list.length, decoded);
       } catch (e) {
         this.loadError = `load failed: ${JSON.stringify(e)}`;
         hilog.error(0x0000, 'homePage', 'fetchSessions error: %{public}s', JSON.stringify(e));
@@ -71,26 +74,29 @@ export struct HomePage {
           .padding({ top: Spacing.xl })
       } else {
         List({ space: 0 }) {
-          ForEach(this.sessions, (s: Session) => {
+          ForEach(this.sessions, (d: DecryptedSession) => {
             ListItem() {
               Row() {
                 Column() {}
                   .width(8)
                   .height(8)
-                  .backgroundColor(s.active ? $r('app.color.primary') : $r('app.color.divider'))
+                  .backgroundColor(d.session.active ? $r('app.color.primary') : $r('app.color.divider'))
                   .borderRadius(4)
                   .margin({ right: Spacing.sm, top: 6 })
 
                 Column() {
-                  Text(truncateId(s.id))
+                  Text(primaryLabel(d))
                     .fontSize(13)
-                    .fontFamily('HarmonyOS Sans Mono')
                     .fontColor($r('app.color.text_primary'))
-                  Text('metadata pending')
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  Text(secondaryLabel(d))
                     .fontSize(11)
                     .fontColor($r('app.color.text_secondary'))
                     .margin({ top: 2 })
-                  Text(formatTime(s.updatedAt))
+                    .maxLines(2)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  Text(formatTime(d.session.updatedAt))
                     .fontSize(11)
                     .fontColor($r('app.color.text_secondary'))
                     .margin({ top: 2 })
@@ -102,7 +108,7 @@ export struct HomePage {
               .padding({ top: Spacing.sm, bottom: Spacing.sm })
               .alignItems(VerticalAlign.Top)
             }
-          }, (s: Session) => s.id)
+          }, (d: DecryptedSession) => d.session.id)
         }
         .width('100%')
         .layoutWeight(1)
@@ -132,6 +138,29 @@ export struct HomePage {
 function truncateId(s: string): string {
   if (s.length <= 20) return s;
   return `${s.substring(0, 10)}…${s.substring(s.length - 6)}`;
+}
+
+function basename(path: string): string {
+  // POSIX-only for now; Windows paths would need '\\'. Happy metadata paths
+  // are always POSIX-shaped (Claude Code session CWDs).
+  const stripped = path.endsWith('/') ? path.slice(0, -1) : path;
+  const idx = stripped.lastIndexOf('/');
+  if (idx < 0) return stripped === '' ? path : stripped;
+  const tail = stripped.substring(idx + 1);
+  return tail === '' ? stripped : tail;
+}
+
+function primaryLabel(d: DecryptedSession): string {
+  const md = d.metadata;
+  if (md === null) return truncateId(d.session.id);
+  return basename(md.path);
+}
+
+function secondaryLabel(d: DecryptedSession): string {
+  const md = d.metadata;
+  if (md === null) return 'metadata pending';
+  if (md.summaryText !== undefined && md.summaryText !== '') return md.summaryText;
+  return `${md.host} · ${md.path}`;
 }
 
 function formatTime(ms: number): string {
