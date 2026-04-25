@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Refuse commits that bake signing material into build-profile.json5.
+# DevEco Studio's "Project Structure → Signing Configs" wizard rewrites
+# the file with hard-coded keyPassword/storePassword blobs and absolute
+# ~/.ohos/config/ paths; this hook catches that before it reaches a
+# commit.
+#
+# Allowed:   "keyPassword": "${env.HAPPY_HARMONY_KEY_PASSWORD}"
+# Rejected:  "keyPassword": "0000001B0D…"
+#            "certpath": "/Users/anyone/.ohos/config/…"
+#
+# Install once (per clone): scripts/hooks/install.sh
+set -e
+
+BAD=0
+
+leak() {
+  echo "✗ pre-commit: $1" >&2
+  BAD=1
+}
+
+# Inspect staged diff for build-profile.json5 only.
+diff=$(git diff --cached -U0 -- build-profile.json5 || true)
+if [ -z "$diff" ]; then
+  exit 0
+fi
+
+# Added (+) lines, excluding the diff header "+++ ".
+added=$(printf '%s\n' "$diff" | grep -E '^\+[^+]' || true)
+if [ -z "$added" ]; then
+  exit 0
+fi
+
+# Rule 1: keyPassword / storePassword must be ${env.…} reference, never literal.
+if printf '%s\n' "$added" | grep -E '"(keyPassword|storePassword)"\s*:\s*"[^$]' >/dev/null; then
+  leak "build-profile.json5 has a literal keyPassword/storePassword (use \${env.…})"
+  printf '%s\n' "$added" | grep -nE '"(keyPassword|storePassword)"\s*:\s*"[^$]' >&2
+fi
+
+# Rule 2: no absolute /Users/ paths — keep cert paths under ./signing/.
+if printf '%s\n' "$added" | grep -E '"(certpath|profile|storeFile)"\s*:\s*"/Users/' >/dev/null; then
+  leak "build-profile.json5 has an absolute /Users/ cert path (use ./signing/…)"
+  printf '%s\n' "$added" | grep -nE '"(certpath|profile|storeFile)"\s*:\s*"/Users/' >&2
+fi
+
+if [ "$BAD" -ne 0 ]; then
+  echo "" >&2
+  echo "Edit build-profile.json5 by hand. The DevEco GUI Signing Configs" >&2
+  echo "wizard re-writes literal blobs and absolute paths — use the env-" >&2
+  echo "var form documented in the file's header comment." >&2
+  exit 1
+fi
+
+exit 0

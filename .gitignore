@@ -11,4 +11,7 @@
 **/.test
 /.appanalyzer
 /dev-secrets.*
+/signing/
+/.env.local
+/build-profile.json5.envref
 **/BuildProfile.ets

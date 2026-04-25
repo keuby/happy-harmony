@@ -1,11 +1,35 @@
 {
   "app": {
-    // Signing is not committed. Each developer auto-generates their own
-    // debug signing via DevEco Studio: File → Project Structure →
-    // Signing Configs → tick "Support HarmonyOS" and "Automatically
-    // generate signing". DevEco fills this array in-place; do not commit
-    // the material (keyPassword / storePassword / local certpaths).
-    "signingConfigs": [],
+    // Signing config — debug only.
+    //
+    // Cert/key store/profile live under ./signing (gitignored). DO NOT
+    // open DevEco Studio's "File → Project Structure → Signing Configs"
+    // wizard: it overwrites these entries with hard-coded keyPassword /
+    // storePassword blobs and absolute ~/.ohos/config/* paths. Edit this
+    // block by hand; passwords come from environment variables resolved
+    // by hvigor at build time.
+    //
+    // Required env vars (export from ~/.zshrc or load via .env.local):
+    //   HAPPY_HARMONY_KEY_PASSWORD   — DevEco-encrypted blob from key store
+    //   HAPPY_HARMONY_STORE_PASSWORD — DevEco-encrypted blob from .p12
+    //
+    // To regenerate the cert: DevEco Build → Generate Key and CSR, then
+    // copy the four files into ./signing/ and re-export the two env vars.
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "./signing/happy-harmony.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "${env.HAPPY_HARMONY_KEY_PASSWORD}",
+          "profile": "./signing/happy-harmony.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "./signing/happy-harmony.p12",
+          "storePassword": "${env.HAPPY_HARMONY_STORE_PASSWORD}"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
